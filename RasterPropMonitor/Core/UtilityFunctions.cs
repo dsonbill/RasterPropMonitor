@@ -1675,6 +1675,7 @@ namespace JSI
     public class RPMShaderLoader : MonoBehaviour
     {
         //private bool reloadInProgress = false;
+        KSPAssets.AssetDefinition[] rpmShaders;
 
         RPMShaderLoader()
         {
@@ -1696,7 +1697,7 @@ namespace JSI
                 return;
             }
 
-            KSPAssets.AssetDefinition[] rpmShaders = KSPAssets.Loaders.AssetLoader.GetAssetDefinitionsWithType("JSI/RasterPropMonitor/rasterpropmonitor", typeof(Shader));
+            rpmShaders = KSPAssets.Loaders.AssetLoader.GetAssetDefinitionsWithType("JSI/RasterPropMonitor/rasterpropmonitor", typeof(Shader));
             if (rpmShaders == null || rpmShaders.Length == 0)
             {
                 JUtil.LogErrorMessage(this, "Unable to load shaders - No shaders found in RPM asset bundle.");
@@ -1988,30 +1989,6 @@ namespace JSI
         /// <param name="loader">Object containing our loaded assets (see comments in this method)</param>
         private void AssetsLoaded(KSPAssets.Loaders.AssetLoader.Loader loader)
         {
-            // This is an unforunate hack.  AssetLoader.LoadAssets barfs if
-            // multiple assets are loaded, leaving us with only one valid asset
-            // and some nulls afterwards in loader.objects.  We are forced to
-            // traverse the LoadedBundles list to find our loaded bundle so we
-            // can find the rest of our shaders.
-            string aShaderName = string.Empty;
-            for (int i = 0; i < loader.objects.Length; ++i)
-            {
-                UnityEngine.Object o = loader.objects[i];
-                if (o != null && o is Shader)
-                {
-                    // We'll remember the name of whichever shader we were
-                    // able to load.
-                    aShaderName = o.name;
-                    break;
-                }
-            }
-
-            if (string.IsNullOrEmpty(aShaderName))
-            {
-                JUtil.LogErrorMessage(this, "Unable to find a named shader in loader.objects");
-                return;
-            }
-
             var loadedBundles = KSPAssets.Loaders.AssetLoader.LoadedBundles;
             if (loadedBundles == null)
             {
@@ -2040,7 +2017,7 @@ namespace JSI
                         // the bundle we want.
                         for (int shaderIdx = 0; shaderIdx < shaders.Length; ++shaderIdx)
                         {
-                            if (shaders[shaderIdx].name == aShaderName)
+                            if (shaders[shaderIdx].name == rpmShaders[0].name)
                             {
                                 theRightBundle = true;
                                 break;
