@@ -29,7 +29,7 @@ using UnityEngine;
 
 namespace SimpleMFD
 {
-    public static class MapIcons
+    public static class SMFDMapIcons
     {
         public enum OtherIcon
         {
@@ -160,7 +160,7 @@ namespace SimpleMFD
         }
     }
 
-    public static class GizmoIcons
+    public static class SMFDGizmoIcons
     {
         public enum IconType
         {
@@ -227,7 +227,7 @@ namespace SimpleMFD
         }
     }
 
-    public static class JUtil
+    public static class SMFDUtil
     {
         public static readonly string[] VariableListSeparator = { "$&$" };
         public static readonly string[] VariableSeparator = { };
@@ -288,7 +288,7 @@ namespace SimpleMFD
         {
             if (!parsedShaders.ContainsKey(shaderName))
             {
-                JUtil.LogErrorMessage(null, "Failed to find shader {0}", shaderName);
+                SMFDUtil.LogErrorMessage(null, "Failed to find shader {0}", shaderName);
                 return null;
             }
             else
@@ -527,7 +527,7 @@ namespace SimpleMFD
         {
             Part currentPart = null;
 
-            if (JUtil.VesselIsInIVA(vessel))
+            if (SMFDUtil.VesselIsInIVA(vessel))
             {
                 Kerbal thatKerbal = CameraManager.Instance.IVACameraActiveKerbal;
                 if (thatKerbal != null)
@@ -628,7 +628,7 @@ namespace SimpleMFD
 
         public static bool StockOverlayCamIsOn()
         {
-            Camera stockOverlayCamera = JUtil.GetCameraByName("InternalSpaceOverlay Host");
+            Camera stockOverlayCamera = SMFDUtil.GetCameraByName("InternalSpaceOverlay Host");
 
             return (stockOverlayCamera != null);
         }
@@ -703,11 +703,11 @@ namespace SimpleMFD
 
         public static void LogMessage(object caller, string line, params object[] list)
         {
-            if (RPMGlobals.debugLoggingEnabled)
+            if (SMFDGlobals.debugLoggingEnabled)
             {
                 string callerName = (caller != null) ? caller.GetType().Name : "RasterPropMonitor";
 
-                if (RPMGlobals.debugShowOnly.Count == 0 || RPMGlobals.debugShowOnly.Contains(callerName))
+                if (SMFDGlobals.debugShowOnly.Count == 0 || SMFDGlobals.debugShowOnly.Contains(callerName))
                 {
                     Debug.Log(String.Format("[" + callerName + "]: " + line, list));
                 }
@@ -1085,12 +1085,12 @@ namespace SimpleMFD
                 if (targetVessel.LandedOrSplashed)
                 {
                     double closestApproach;
-                    Orbit targetOrbit = JUtil.ClosestApproachSrfOrbit(vesselOrbit, targetVessel, out timeAtClosestApproach, out closestApproach);
+                    Orbit targetOrbit = SMFDUtil.ClosestApproachSrfOrbit(vesselOrbit, targetVessel, out timeAtClosestApproach, out closestApproach);
                     return closestApproach;
                 }
                 else
                 {
-                    return JUtil.GetClosestApproach(vesselOrbit, targetVessel.GetOrbit(), out timeAtClosestApproach);
+                    return SMFDUtil.GetClosestApproach(vesselOrbit, targetVessel.GetOrbit(), out timeAtClosestApproach);
                 }
             }
             else
@@ -1354,7 +1354,7 @@ namespace SimpleMFD
             string[] tokens = packedMethod.Split(':');
             if (tokens.Length != 2)
             {
-                JUtil.LogErrorMessage(internalProp, "Bad format on {0}", packedMethod);
+                SMFDUtil.LogErrorMessage(internalProp, "Bad format on {0}", packedMethod);
                 throw new ArgumentException("stateMethod incorrectly formatted");
             }
             moduleName = tokens[0];
@@ -1382,7 +1382,7 @@ namespace SimpleMFD
             }
             if (thatModule == null)
             {
-                JUtil.LogErrorMessage(internalProp, "Failed finding module {0} for method {1}", moduleName, stateMethod);
+                SMFDUtil.LogErrorMessage(internalProp, "Failed finding module {0} for method {1}", moduleName, stateMethod);
                 return null;
             }
 
@@ -1435,7 +1435,7 @@ namespace SimpleMFD
     }
 
     // This, instead, is a static class on it's own because it needs its private static variables.
-    public static class InstallationPathWarning
+    public static class SMFDInstallationPathWarning
     {
         private static readonly List<string> warnedList = new List<string>();
         private const string gameData = "GameData";
@@ -1583,24 +1583,24 @@ namespace SimpleMFD
         {
             if (KSPAssets.Loaders.AssetLoader.Ready == false)
             {
-                JUtil.LogErrorMessage(this, "Unable to load shaders - AssetLoader is not ready.");
+                SMFDUtil.LogErrorMessage(this, "Unable to load shaders - AssetLoader is not ready.");
                 return;
             }
 
             rpmShaders = KSPAssets.Loaders.AssetLoader.GetAssetDefinitionsWithType("SimpleMFD/rasterpropmonitor", typeof(Shader));
             if (rpmShaders == null || rpmShaders.Length == 0)
             {
-                JUtil.LogErrorMessage(this, "Unable to load shaders - No shaders found in RPM asset bundle.");
+                SMFDUtil.LogErrorMessage(this, "Unable to load shaders - No shaders found in RPM asset bundle.");
                 return;
             }
 
             if (!GameDatabase.Instance.IsReady())
             {
-                JUtil.LogErrorMessage(this, "GameDatabase.IsReady is false");
+                SMFDUtil.LogErrorMessage(this, "GameDatabase.IsReady is false");
                 throw new Exception("SMFDShaderLoader: GameDatabase is not ready.  Unable to continue.");
             }
 
-            ConfigNode rpmSettings = ConfigNode.Load(KSPUtil.ApplicationRootPath + RPMGlobals.configFileName);
+            ConfigNode rpmSettings = ConfigNode.Load(KSPUtil.ApplicationRootPath + SMFDGlobals.configFileName);
             // rpmSettings points at the base node.  I need to step into that node to access my settings.
             if (rpmSettings != null && rpmSettings.CountNodes > 0)
             {
@@ -1616,55 +1616,55 @@ namespace SimpleMFD
                 bool enableLogging = false;
                 if (rpmSettings.TryGetValue("DebugLogging", ref enableLogging))
                 {
-                    RPMGlobals.debugLoggingEnabled = enableLogging;
-                    JUtil.LogInfo(this, "Set debugLoggingEnabled to {0}", enableLogging);
+                    SMFDGlobals.debugLoggingEnabled = enableLogging;
+                    SMFDUtil.LogInfo(this, "Set debugLoggingEnabled to {0}", enableLogging);
                 }
                 else
                 {
-                    RPMGlobals.debugLoggingEnabled = false;
+                    SMFDGlobals.debugLoggingEnabled = false;
                 }
 
                 bool showVariableCallCount = false;
                 if (rpmSettings.TryGetValue("ShowCallCount", ref showVariableCallCount))
                 {
                     // call count doesn't write anything if enableLogging is false
-                    RPMGlobals.debugShowVariableCallCount = showVariableCallCount && RPMGlobals.debugLoggingEnabled;
+                    SMFDGlobals.debugShowVariableCallCount = showVariableCallCount && SMFDGlobals.debugLoggingEnabled;
                 }
                 else
                 {
-                    RPMGlobals.debugShowVariableCallCount = false;
+                    SMFDGlobals.debugShowVariableCallCount = false;
                 }
 
-                int defaultRefresh = RPMGlobals.defaultRefreshRate;
+                int defaultRefresh = SMFDGlobals.defaultRefreshRate;
                 if (rpmSettings.TryGetValue("DefaultRefreshRate", ref defaultRefresh))
                 {
-                    RPMGlobals.defaultRefreshRate = Math.Max(defaultRefresh, 1);
+                    SMFDGlobals.defaultRefreshRate = Math.Max(defaultRefresh, 1);
                 }
 
-                int minRefresh = RPMGlobals.minimumRefreshRate;
+                int minRefresh = SMFDGlobals.minimumRefreshRate;
                 if (rpmSettings.TryGetValue("MinimumRefreshRate", ref minRefresh))
                 {
-                    RPMGlobals.minimumRefreshRate = Math.Max(minRefresh, 1);
+                    SMFDGlobals.minimumRefreshRate = Math.Max(minRefresh, 1);
                 }
 
                 bool useNewVariableAnimator = false;
                 if (rpmSettings.TryGetValue("UseNewVariableAnimator", ref useNewVariableAnimator))
                 {
-                    RPMGlobals.useNewVariableAnimator = useNewVariableAnimator;
+                    SMFDGlobals.useNewVariableAnimator = useNewVariableAnimator;
                 }
                 else
                 {
-                    RPMGlobals.useNewVariableAnimator = false;
+                    SMFDGlobals.useNewVariableAnimator = false;
                 }
 
-                RPMGlobals.debugShowOnly.Clear();
+                SMFDGlobals.debugShowOnly.Clear();
                 string showOnlyConcat = string.Empty;
                 if (rpmSettings.TryGetValue("ShowOnly", ref showOnlyConcat) && !string.IsNullOrEmpty(showOnlyConcat))
                 {
                     string[] showOnly = showOnlyConcat.Split('|');
                     for (int i = 0; i < showOnly.Length; ++i)
                     {
-                        RPMGlobals.debugShowOnly.Add(showOnly[i].Trim());
+                        SMFDGlobals.debugShowOnly.Add(showOnly[i].Trim());
                     }
                 }
             }
@@ -1681,7 +1681,7 @@ namespace SimpleMFD
             // of database reloads.
             if (!RegisterWithModuleManager())
             {
-                JUtil.LogErrorMessage(this, "Unable to register with ModuleManager for database reloads");
+                SMFDUtil.LogErrorMessage(this, "Unable to register with ModuleManager for database reloads");
             }
         }
 
@@ -1721,7 +1721,7 @@ namespace SimpleMFD
             var loadedBundles = KSPAssets.Loaders.AssetLoader.LoadedBundles;
             if (loadedBundles == null)
             {
-                JUtil.LogErrorMessage(this, "Unable to find any loaded bundles in AssetLoader");
+                SMFDUtil.LogErrorMessage(this, "Unable to find any loaded bundles in AssetLoader");
                 return;
             }
 
@@ -1761,30 +1761,30 @@ namespace SimpleMFD
                 {
                     // If we found our bundle, set up our parsedShaders
                     // dictionary and bail - our mission is complete.
-                    JUtil.LogInfo(this, "Found {0} RPM shaders and {1} fonts.", shaders.Length, fonts.Length);
+                    SMFDUtil.LogInfo(this, "Found {0} RPM shaders and {1} fonts.", shaders.Length, fonts.Length);
                     for (int j = 0; j < shaders.Length; ++j)
                     {
                         if (!shaders[j].isSupported)
                         {
-                            JUtil.LogErrorMessage(this, "Shader {0} - unsupported in this configuration", shaders[j].name);
+                            SMFDUtil.LogErrorMessage(this, "Shader {0} - unsupported in this configuration", shaders[j].name);
                         }
-                        JUtil.parsedShaders[shaders[j].name] = shaders[j];
+                        SMFDUtil.parsedShaders[shaders[j].name] = shaders[j];
                     }
                     for (int j = 0; j < fonts.Length; ++j)
                     {
-                        JUtil.LogInfo(this, "Adding RPM-included font {0} / {1}", fonts[j].name, fonts[j].fontSize);
-                        JUtil.loadedFonts[fonts[j].name] = fonts[j];
+                        SMFDUtil.LogInfo(this, "Adding RPM-included font {0} / {1}", fonts[j].name, fonts[j].fontSize);
+                        SMFDUtil.loadedFonts[fonts[j].name] = fonts[j];
                     }
                     return;
                 }
             }
 
-            JUtil.LogErrorMessage(this, "No RasterPropMonitor shaders were loaded - how did this callback execute?");
+            SMFDUtil.LogErrorMessage(this, "No RasterPropMonitor shaders were loaded - how did this callback execute?");
         }
 
         public void PostPatchCallback()
         {
-            JUtil.LogMessage(this, "ModuleManager has reloaded - reloading RPM values");
+            SMFDUtil.LogMessage(this, "ModuleManager has reloaded - reloading RPM values");
             //StartCoroutine("LoadRasterPropMonitorValues");
         }
 
@@ -1827,7 +1827,7 @@ namespace SimpleMFD
             }
             catch (Exception e)
             {
-                JUtil.LogMessage(this, "addPostPatchCallback threw {0}", e);
+                SMFDUtil.LogMessage(this, "addPostPatchCallback threw {0}", e);
                 return false;
             }
 

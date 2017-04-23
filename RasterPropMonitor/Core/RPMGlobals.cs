@@ -28,7 +28,7 @@ namespace SimpleMFD
     /// These are generally loaded in by the RPMShaderLoader class in the main
     /// menu.
     /// </summary>
-    internal static class RPMGlobals
+    internal static class SMFDGlobals
     {
         internal static readonly string configFileName = "GameData/SimpleMFD/Plugins/PluginData/rpm-config.cfg";
         internal const float KelvinToCelsius = -273.15f;

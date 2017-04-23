@@ -5,9 +5,9 @@ using UnityEngine;
 
 namespace SimpleMFD
 {
-    internal class TextRenderer
+    internal class SMFDTextRenderer
     {
-        private class FontRenderer
+        private class SMFDFontRenderer
         {
             public Texture2D fontTexture;
             public Mesh mesh;
@@ -18,9 +18,9 @@ namespace SimpleMFD
             public List<Vector2> uvs = new List<Vector2>();
             public List<Color32> colors32 = new List<Color32>();
 
-            internal FontRenderer(Texture2D fontTexture, Vector2 vectorSize, int drawingLayer, Transform parentTransform)
+            internal SMFDFontRenderer(Texture2D fontTexture, Vector2 vectorSize, int drawingLayer, Transform parentTransform)
             {
-                Shader displayShader = JUtil.LoadInternalShader("RPM/FontShader");
+                Shader displayShader = SMFDUtil.LoadInternalShader("RPM/FontShader");
 
                 fontMaterial = new Material(displayShader);
                 fontMaterial.color = Color.white;
@@ -106,7 +106,7 @@ namespace SimpleMFD
         }
 
         // The per-font (texture) renderers
-        private readonly List<FontRenderer> fontRenderer;
+        private readonly List<SMFDFontRenderer> fontRenderer;
 
         // pre-computed font sizes (in terms of pixel sizes)
         private readonly float fontLetterWidth;
@@ -152,7 +152,7 @@ namespace SimpleMFD
          * 
          * Set up the TextRenderer object, and take care of the pre-computations needed.
          */
-        public TextRenderer(List<Texture2D> fontTexture, Vector2 fontLetterSize, string fontDefinitionString, int drawingLayer, int screenWidth, int screenHeight)
+        public SMFDTextRenderer(List<Texture2D> fontTexture, Vector2 fontLetterSize, string fontDefinitionString, int drawingLayer, int screenWidth, int screenHeight)
         {
             if (fontTexture.Count == 0)
             {
@@ -175,7 +175,7 @@ namespace SimpleMFD
 
             if (lastCharacter != fontDefinitionString.Length)
             {
-                JUtil.LogMessage(this, "Warning, number of letters in the font definition does not match font bitmap size.");
+                SMFDUtil.LogMessage(this, "Warning, number of letters in the font definition does not match font bitmap size.");
             }
 
             // Precompute texture coordinates for all of the supported characters
@@ -213,10 +213,10 @@ namespace SimpleMFD
             textCamera.transform.position = Vector3.zero;
             textCamera.transform.LookAt(new Vector3(0.0f, 0.0f, 1.5f), Vector3.up);
 
-            fontRenderer = new List<FontRenderer>();
+            fontRenderer = new List<SMFDFontRenderer>();
             for (int i = 0; i < fontTexture.Count; ++i)
             {
-                FontRenderer fr = new FontRenderer(fontTexture[i], fontLetterSize, drawingLayer, cameraBody.transform);
+                SMFDFontRenderer fr = new SMFDFontRenderer(fontTexture[i], fontLetterSize, drawingLayer, cameraBody.transform);
 
                 fontRenderer.Add(fr);
             }
@@ -240,7 +240,7 @@ namespace SimpleMFD
             float yOffset = 0.0f;
             Script scriptType = Script.Normal;
             Width fontWidth = Width.Normal;
-            FontRenderer fr = fontRenderer[pageFont];
+            SMFDFontRenderer fr = fontRenderer[pageFont];
             bool anyWarnings = false;
 
             float xCursor = screenXMin * fontLetterWidth;
@@ -392,14 +392,14 @@ namespace SimpleMFD
 
             if (anyWarnings)
             {
-                JUtil.LogMessage(this, "String missing characters: {0}", textToRender);
+                SMFDUtil.LogMessage(this, "String missing characters: {0}", textToRender);
             }
         }
 
         /**
          * Record the vertex, uv, and color information for a single character.
          */
-        private bool DrawChar(FontRenderer fr, char letter, float xPos, float yPos, Color32 letterColor, Script scriptType, Width fontWidth)
+        private bool DrawChar(SMFDFontRenderer fr, char letter, float xPos, float yPos, Color32 letterColor, Script scriptType, Width fontWidth)
         {
             if (fontCharacters.ContainsKey(letter))
             {
@@ -421,7 +421,7 @@ namespace SimpleMFD
             }
             else if (!characterWarnings.Contains(letter))
             {
-                JUtil.LogMessage(this, "Warning: Attempted to print a character \"{0}\" (u{1}) not present in the font.", letter.ToString(), letter);
+                SMFDUtil.LogMessage(this, "Warning: Attempted to print a character \"{0}\" (u{1}) not present in the font.", letter.ToString(), letter);
 
                 characterWarnings.Add(letter);
                 return false;
@@ -434,7 +434,7 @@ namespace SimpleMFD
          * Render the text.  Assumes screen has already been cleared, so all we have to do here
          * is prepare the text objects and draw the text.
          */
-        public void Render(RenderTexture screen, MonitorPage activePage)
+        public void Render(RenderTexture screen, SMFDMonitorPage activePage)
         {
             int screenTextHash = activePage.Text.GetHashCode();
             int overlayTextHash = activePage.textOverlay.GetHashCode();
@@ -470,7 +470,7 @@ namespace SimpleMFD
             {
                 if (fontRenderer[i].mesh.vertexCount > 0)
                 {
-                    JUtil.ShowHide(true, fontRenderer[i].obj);
+                    SMFDUtil.ShowHide(true, fontRenderer[i].obj);
                 }
             }
 
@@ -481,7 +481,7 @@ namespace SimpleMFD
             {
                 if (fontRenderer[i].mesh.vertexCount > 0)
                 {
-                    JUtil.ShowHide(false, fontRenderer[i].obj);
+                    SMFDUtil.ShowHide(false, fontRenderer[i].obj);
                 }
             }
         }

@@ -24,7 +24,7 @@ using UnityEngine;
 // FIXME: This module turned into total spaghetti by now and needs some serious rethinking.
 namespace SimpleMFD
 {
-    public class FlyingCamera
+    public class SMFDFlyingCamera
     {
         private readonly Vessel ourVessel;
         private readonly Part ourPart;
@@ -55,7 +55,7 @@ namespace SimpleMFD
 
         public float FOV { get; set; }
 
-        public FlyingCamera(Part thatPart, float aspect)
+        public SMFDFlyingCamera(Part thatPart, float aspect)
         {
             ourVessel = thatPart.vessel;
             ourPart = thatPart;
@@ -78,7 +78,7 @@ namespace SimpleMFD
 
                 if (newCameraName == referenceCamera)
                 {
-                    JUtil.LogMessage(this, "Tracking reference point docking port camera.");
+                    SMFDUtil.LogMessage(this, "Tracking reference point docking port camera.");
                     return PointToReferenceCamera();
                 }
                 else
@@ -133,7 +133,7 @@ namespace SimpleMFD
                 }
                 else
                 {
-                    JUtil.LogMessage(this, "Claw was not a stock part. Falling back to reference transform position...");
+                    SMFDUtil.LogMessage(this, "Claw was not a stock part. Falling back to reference transform position...");
                     cameraPart = thatClaw.part;
                     cameraTransform = ourVessel.ReferenceTransform.gameObject;
                 }
@@ -221,7 +221,7 @@ namespace SimpleMFD
 
         private void CameraSetup(int index, string sourceName)
         {
-            Camera sourceCam = JUtil.GetCameraByName(sourceName);
+            Camera sourceCam = SMFDUtil.GetCameraByName(sourceName);
 
             if (sourceCam != null)
             {
@@ -321,7 +321,7 @@ namespace SimpleMFD
 
             // This is a hack - FXCamera isn't always available, so I need to add and remove it in flight.
             // I don't know if there's a callback I can use to find when it's added, so brute force it for now.
-            bool fxCameraExists = JUtil.DoesCameraExist(knownCameraNames[fxCameraIndex]);
+            bool fxCameraExists = SMFDUtil.DoesCameraExist(knownCameraNames[fxCameraIndex]);
             if (cameraObject[fxCameraIndex] == null)
             {
                 if (fxCameraExists)

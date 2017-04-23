@@ -24,7 +24,7 @@ using KSP.UI.Screens.Flight;
 
 namespace SimpleMFD
 {
-    public class JSIPrimaryFlightDisplay : InternalModule
+    public class SMFDPrimaryFlightDisplay : InternalModule
     {
         [KSPField]
         public int drawingLayer = 17;
@@ -150,14 +150,14 @@ namespace SimpleMFD
 
             float overlayDepth = navBall.transform.position.z - navballRadius - 0.1f;
 
-            Shader displayShader = JUtil.LoadInternalShader("RPM/DisplayShader");
+            Shader displayShader = SMFDUtil.LoadInternalShader("RPM/DisplayShader");
 
             if (!string.IsNullOrEmpty(staticOverlay))
             {
                 Material overlayMaterial = new Material(displayShader);
                 overlayMaterial.mainTexture = GameDatabase.Instance.GetTexture(staticOverlay.EnforceSlashes(), false);
 
-                overlay = JUtil.CreateSimplePlane("RPMPFDOverlay" + internalProp.propID, cameraSpan, drawingLayer);
+                overlay = SMFDUtil.CreateSimplePlane("RPMPFDOverlay" + internalProp.propID, cameraSpan, drawingLayer);
                 overlay.layer = drawingLayer;
                 overlay.transform.position = new Vector3(0, 0, overlayDepth);
                 overlay.GetComponent<Renderer>().material = overlayMaterial;
@@ -172,7 +172,7 @@ namespace SimpleMFD
                 float hbXPos = headingBarPosition.x - screenWidth * 0.5f;
                 float hbYPos = screenHeight * 0.5f - headingBarPosition.y;
 
-                heading = JUtil.CreateSimplePlane("RPMPFDHeading" + internalProp.propID, new Vector2(headingBarPosition.z * pixelSize, headingBarPosition.w * pixelSize), new Rect(0.0f, 0.0f, 1.0f, 1.0f), drawingLayer);
+                heading = SMFDUtil.CreateSimplePlane("RPMPFDHeading" + internalProp.propID, new Vector2(headingBarPosition.z * pixelSize, headingBarPosition.w * pixelSize), new Rect(0.0f, 0.0f, 1.0f, 1.0f), drawingLayer);
                 heading.transform.position = new Vector3(hbXPos * pixelSize, hbYPos * pixelSize, headingAboveOverlay ? (overlayDepth - 0.1f) : (overlayDepth + 0.1f));
                 heading.transform.parent = cameraBody.transform;
                 Renderer hdgMatl = null;
@@ -180,7 +180,7 @@ namespace SimpleMFD
                 hdgMatl.material.SetTextureScale("_MainTex", new Vector2(headingSpan, 1f));
             }
 
-            Texture2D gizmoTexture = JUtil.GetGizmoTexture();
+            Texture2D gizmoTexture = SMFDUtil.GetGizmoTexture();
             markerDepth = navBall.transform.position.z - navballRadius - 0.05f;
             float scaledMarkerSize = markerSize * 0.5f * pixelSize;
             markerPrograde = BuildMarker(0, 2, scaledMarkerSize, gizmoTexture, progradeColorValue, drawingLayer, internalProp.propID, displayShader);
@@ -227,7 +227,7 @@ namespace SimpleMFD
             if (heading != null)
             {
                 heading.GetComponent<Renderer>().material.SetTextureOffset("_MainTex",
-                    new Vector2(JUtil.DualLerp(0f, 1f, 0f, 360f, Quaternion.Inverse(navBallNavBall.relativeGymbal).eulerAngles.y) - headingSpan / 2f, 0));
+                    new Vector2(SMFDUtil.DualLerp(0f, 1f, 0f, 360f, Quaternion.Inverse(navBallNavBall.relativeGymbal).eulerAngles.y) - headingSpan / 2f, 0));
             }
 
             Quaternion gymbal = stockNavBall.attitudeGymbal;
@@ -250,7 +250,7 @@ namespace SimpleMFD
                 MoveMarker(markerRadial, radialPlus, gymbal);
                 MoveMarker(markerRadialMinus, -radialPlus, gymbal);
 
-                JUtil.ShowHide(true, markerNormal, markerNormalMinus, markerRadial, markerRadialMinus);
+                SMFDUtil.ShowHide(true, markerNormal, markerNormalMinus, markerRadial, markerRadialMinus);
             }
             else if (FlightGlobals.speedDisplayMode == FlightGlobals.SpeedDisplayModes.Surface)
             {
@@ -271,7 +271,7 @@ namespace SimpleMFD
                 Vector3 burnVector = vessel.patchedConicSolver.maneuverNodes[0].GetBurnVector(vessel.orbit).normalized;
                 MoveMarker(markerManeuver, burnVector, gymbal);
                 MoveMarker(markerManeuverMinus, -burnVector, gymbal);
-                JUtil.ShowHide(true, markerManeuver, markerManeuverMinus);
+                SMFDUtil.ShowHide(true, markerManeuver, markerManeuverMinus);
             }
 
             /*
@@ -328,15 +328,15 @@ namespace SimpleMFD
                     }
                     MoveMarker(markerDockingAlignment, targetOrientationVector, gymbal);
                     markerDockingAlignment.transform.Rotate(Vector3.up, -angle);
-                    JUtil.ShowHide(true, markerDockingAlignment);
+                    SMFDUtil.ShowHide(true, markerDockingAlignment);
                 }
-                JUtil.ShowHide(true, markerTarget, markerTargetMinus);
+                SMFDUtil.ShowHide(true, markerTarget, markerTargetMinus);
             }
 
-            JUtil.ShowHide(true,
+            SMFDUtil.ShowHide(true,
                 cameraBody, navBall, overlay, heading, markerPrograde, markerRetrograde);
             ballCamera.Render();
-            JUtil.ShowHide(false,
+            SMFDUtil.ShowHide(false,
                 cameraBody, navBall, overlay, heading, markerPrograde, markerRetrograde,
                 markerManeuver, markerManeuverMinus, markerTarget, markerTargetMinus,
                 markerNormal, markerNormalMinus, markerRadial, markerRadialMinus, markerDockingAlignment, markerNavWaypoint);
@@ -373,7 +373,7 @@ namespace SimpleMFD
 
         private static GameObject BuildMarker(int iconX, int iconY, float markerSize, Texture gizmoTexture, Color nativeColor, int drawingLayer, int propID, Shader shader)
         {
-            GameObject marker = JUtil.CreateSimplePlane("RPMPFDMarker" + iconX + iconY + propID, markerSize, drawingLayer);
+            GameObject marker = SMFDUtil.CreateSimplePlane("RPMPFDMarker" + iconX + iconY + propID, markerSize, drawingLayer);
 
             Material material = new Material(shader);
             material.mainTexture = gizmoTexture;
@@ -385,7 +385,7 @@ namespace SimpleMFD
 
             marker.transform.position = Vector3.zero;
 
-            JUtil.ShowHide(false, marker);
+            SMFDUtil.ShowHide(false, marker);
 
             return marker;
         }
@@ -405,7 +405,7 @@ namespace SimpleMFD
                 }
                 catch (Exception e)
                 {
-                    JUtil.LogErrorMessage(this, "Failed to fetch the NavBall: {0}", e);
+                    SMFDUtil.LogErrorMessage(this, "Failed to fetch the NavBall: {0}", e);
                     navBallNavBall = new NavBall();
                 }
 
@@ -443,7 +443,7 @@ namespace SimpleMFD
                     waypointColorValue = ConfigNode.ParseColor32(waypointColor);
                 }
 
-                Shader displayShader = JUtil.LoadInternalShader("RPM/DisplayShader");
+                Shader displayShader = SMFDUtil.LoadInternalShader("RPM/DisplayShader");
 
                 try
                 {
@@ -451,7 +451,7 @@ namespace SimpleMFD
                 }
                 catch (Exception e)
                 {
-                    JUtil.LogErrorMessage(this, "Unable to fetch the NavBall object: {0}", e);
+                    SMFDUtil.LogErrorMessage(this, "Unable to fetch the NavBall object: {0}", e);
                     // Set up a bogus one so there's no null derefs.
                     stockNavBall = new NavBall();
                 }
@@ -478,7 +478,7 @@ namespace SimpleMFD
                 navBall = GameDatabase.Instance.GetModel(navBallModel.EnforceSlashes());
                 if (navBall == null)
                 {
-                    JUtil.LogErrorMessage(this, "Failed to load navball model {0}", navBallModel);
+                    SMFDUtil.LogErrorMessage(this, "Failed to load navball model {0}", navBallModel);
                     // Early return here - if we don't even have a navball, this module is pointless.
                     return;
                 }
@@ -496,7 +496,7 @@ namespace SimpleMFD
                 }
                 else
                 {
-                    JUtil.LogErrorMessage(this, "Failed to load horizon texture {0}", horizonTexture);
+                    SMFDUtil.LogErrorMessage(this, "Failed to load horizon texture {0}", horizonTexture);
                 }
 
                 navBall.GetComponent<Renderer>().material.SetFloat("_Opacity", ballOpacity);
@@ -505,7 +505,7 @@ namespace SimpleMFD
             }
             catch
             {
-                JUtil.AnnoyUser(this);
+                SMFDUtil.AnnoyUser(this);
                 throw;
             }
         }
@@ -518,7 +518,7 @@ namespace SimpleMFD
                 return;
             }
 
-            JUtil.DisposeOfGameObjects(new GameObject[] { navBall, overlay, heading, markerPrograde, markerRetrograde,
+            SMFDUtil.DisposeOfGameObjects(new GameObject[] { navBall, overlay, heading, markerPrograde, markerRetrograde,
                 markerManeuver, markerManeuverMinus, markerTarget, markerTargetMinus, markerNormal, markerNormalMinus,
                 markerRadial, markerRadialMinus, markerDockingAlignment, markerNavWaypoint});
         }

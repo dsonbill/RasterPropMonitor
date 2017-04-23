@@ -24,35 +24,35 @@ using UnityEngine;
 
 namespace SimpleMFD
 {
-    public class SmarterButton : MonoBehaviour
+    public class SMFDSmarterButton : MonoBehaviour
     {
-        private readonly List<HandlerID> clickHandlersID = new List<HandlerID>();
-        private readonly List<HandlerID> releaseHandlersID = new List<HandlerID>();
+        private readonly List<SMFDHandlerID> clickHandlersID = new List<SMFDHandlerID>();
+        private readonly List<SMFDHandlerID> releaseHandlersID = new List<SMFDHandlerID>();
         private readonly List<Action> clickHandlers = new List<Action>();
         private readonly List<Action> releaseHandlers = new List<Action>();
-        private readonly List<PageTriggerSet> pageTriggers = new List<PageTriggerSet>();
+        private readonly List<SMFDPageTriggerSet> pageTriggers = new List<SMFDPageTriggerSet>();
         private Part part;
 
-        private struct HandlerID
+        private struct SMFDHandlerID
         {
             public Action<int> function;
             public int idValue;
         }
 
-        private class PageTriggerSet
+        private class SMFDPageTriggerSet
         {
             private int counter;
-            private readonly Action<MonitorPage> selector;
-            private readonly List<MonitorPage> pages = new List<MonitorPage>();
+            private readonly Action<SMFDMonitorPage> selector;
+            private readonly List<SMFDMonitorPage> pages = new List<SMFDMonitorPage>();
 
-            public PageTriggerSet(Action<MonitorPage> function, MonitorPage page)
+            public SMFDPageTriggerSet(Action<SMFDMonitorPage> function, SMFDMonitorPage page)
             {
                 selector = function;
                 pages.Add(page);
                 counter = -1;
             }
 
-            public bool Add(Action<MonitorPage> function, MonitorPage page)
+            public bool Add(Action<SMFDMonitorPage> function, SMFDMonitorPage page)
             {
                 if (function == selector)
                 {
@@ -101,11 +101,11 @@ namespace SimpleMFD
                     }
                 }
             }
-            foreach (PageTriggerSet monitor in pageTriggers)
+            foreach (SMFDPageTriggerSet monitor in pageTriggers)
             {
                 monitor.ShowNext();
             }
-            foreach (HandlerID consumer in clickHandlersID)
+            foreach (SMFDHandlerID consumer in clickHandlersID)
             {
                 consumer.function(consumer.idValue);
             }
@@ -117,7 +117,7 @@ namespace SimpleMFD
 
         public void OnMouseUp()
         {
-            foreach (HandlerID consumer in releaseHandlersID)
+            foreach (SMFDHandlerID consumer in releaseHandlersID)
             {
                 consumer.function(consumer.idValue);
             }
@@ -127,7 +127,7 @@ namespace SimpleMFD
             }
         }
 
-        private static SmarterButton AttachBehaviour(InternalProp thatProp, InternalModel thatModel, string buttonName)
+        private static SMFDSmarterButton AttachBehaviour(InternalProp thatProp, InternalModel thatModel, string buttonName)
         {
             string[] tokens = buttonName.Split('|');
             if (thatModel == null || tokens.Length == 2)
@@ -167,7 +167,7 @@ namespace SimpleMFD
             {
                 GameObject buttonObject;
                 buttonObject = thatModel == null ? thatProp.FindModelTransform(buttonName).gameObject : thatModel.FindModelTransform(buttonName).gameObject;
-                SmarterButton thatComponent = buttonObject.GetComponent<SmarterButton>() ?? buttonObject.AddComponent<SmarterButton>();
+                SMFDSmarterButton thatComponent = buttonObject.GetComponent<SMFDSmarterButton>() ?? buttonObject.AddComponent<SMFDSmarterButton>();
                 return thatComponent;
             }
             catch
@@ -179,14 +179,14 @@ namespace SimpleMFD
             return null;
         }
 
-        public static void CreateButton(InternalProp thatProp, string buttonName, MonitorPage thatPage, Action<MonitorPage> handlerFunction, InternalModel thatModel = null)
+        public static void CreateButton(InternalProp thatProp, string buttonName, SMFDMonitorPage thatPage, Action<SMFDMonitorPage> handlerFunction, InternalModel thatModel = null)
         {
-            SmarterButton buttonBehaviour;
+            SMFDSmarterButton buttonBehaviour;
             if ((buttonBehaviour = AttachBehaviour(thatProp, thatModel, buttonName)) == null)
             {
                 return;
             }
-            foreach (PageTriggerSet pageset in buttonBehaviour.pageTriggers)
+            foreach (SMFDPageTriggerSet pageset in buttonBehaviour.pageTriggers)
             {
                 if (pageset.Add(handlerFunction, thatPage))
                 {
@@ -194,24 +194,24 @@ namespace SimpleMFD
                 }
             }
 
-            buttonBehaviour.pageTriggers.Add(new PageTriggerSet(handlerFunction, thatPage));
+            buttonBehaviour.pageTriggers.Add(new SMFDPageTriggerSet(handlerFunction, thatPage));
             buttonBehaviour.part = (thatModel == null) ? thatProp.part : thatModel.part;
         }
 
         public static void CreateButton(InternalProp thatProp, string buttonName, int numericID, Action<int> clickHandlerFunction, Action<int> releaseHandlerFunction, InternalModel thatModel = null)
         {
-            SmarterButton buttonBehaviour;
+            SMFDSmarterButton buttonBehaviour;
             if ((buttonBehaviour = AttachBehaviour(thatProp, thatModel, buttonName)) == null)
             {
                 return;
             }
 
-            buttonBehaviour.clickHandlersID.Add(new HandlerID
+            buttonBehaviour.clickHandlersID.Add(new SMFDHandlerID
             {
                 function = clickHandlerFunction,
                 idValue = numericID
             });
-            buttonBehaviour.releaseHandlersID.Add(new HandlerID
+            buttonBehaviour.releaseHandlersID.Add(new SMFDHandlerID
             {
                 function = releaseHandlerFunction,
                 idValue = numericID
@@ -221,7 +221,7 @@ namespace SimpleMFD
 
         public static void CreateButton(InternalProp thatProp, string buttonName, Action handlerFunction, Action releaseHandlerFunction = null, InternalModel thatModel = null)
         {
-            SmarterButton buttonBehaviour;
+            SMFDSmarterButton buttonBehaviour;
             if ((buttonBehaviour = AttachBehaviour(thatProp, thatModel, buttonName)) == null)
             {
                 return;

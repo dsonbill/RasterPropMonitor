@@ -27,7 +27,7 @@ using UnityEngine;
 
 namespace SimpleMFD
 {
-    public class MonitorPage
+    public class SMFDMonitorPage
     {
         // We still need a numeric ID cause it makes persistence easier.
         public readonly int pageNumber;
@@ -73,7 +73,7 @@ namespace SimpleMFD
         private readonly BackgroundType background = BackgroundType.None;
         private readonly float cameraFOV;
         private readonly string camera;
-        private readonly FlyingCamera cameraObject;
+        private readonly SMFDFlyingCamera cameraObject;
         private const float defaultFOV = 60f;
         private readonly Texture2D backgroundTexture;
         private readonly Func<int, int, string> pageHandlerMethod;
@@ -180,7 +180,7 @@ namespace SimpleMFD
             return true;
         }
 
-        public MonitorPage(int idNum, ConfigNode node, SimpleMFD thatMonitor)
+        public SMFDMonitorPage(int idNum, ConfigNode node, SimpleMFD thatMonitor)
         {
             ourMonitor = thatMonitor;
             screenWidth = ourMonitor.screenWidth;
@@ -203,7 +203,7 @@ namespace SimpleMFD
                 string value = node.GetValue("name").Trim();
                 if (!IsValidPageName(value))
                 {
-                    JUtil.LogMessage(ourMonitor, "Warning, name given for page #{0} is invalid, ignoring.", pageNumber);
+                    SMFDUtil.LogMessage(ourMonitor, "Warning, name given for page #{0} is invalid, ignoring.", pageNumber);
                 }
                 else
                 {
@@ -212,14 +212,14 @@ namespace SimpleMFD
             }
             else
             {
-                JUtil.LogMessage(ourMonitor, "Warning, page #{0} has no name. It's much better if it does.", pageNumber);
+                SMFDUtil.LogMessage(ourMonitor, "Warning, page #{0} has no name. It's much better if it does.", pageNumber);
             }
 
             isDefault |= node.HasValue("default");
 
             if (node.HasValue("button"))
             {
-                SmarterButton.CreateButton(thatMonitor.internalProp, node.GetValue("button"), this, thatMonitor.PageButtonClick);
+                SMFDSmarterButton.CreateButton(thatMonitor.internalProp, node.GetValue("button"), this, thatMonitor.PageButtonClick);
             }
 
             // Page locking system -- simple locking:
@@ -273,13 +273,13 @@ namespace SimpleMFD
                         string[] tokens = renumbers[j].Split(',');
                         if (tokens.Length > 2)
                         {
-                            JUtil.LogMessage(ourMonitor, "Warning, invalid global button redirect statement on page #{0}: requires two arguments.", pageNumber);
+                            SMFDUtil.LogMessage(ourMonitor, "Warning, invalid global button redirect statement on page #{0}: requires two arguments.", pageNumber);
                             continue;
                         }
                         int from, to;
                         if (!int.TryParse(tokens[0], out from) || !int.TryParse(tokens[1], out to))
                         {
-                            JUtil.LogMessage(ourMonitor, "Warning, invalid global button redirect statement on page #{0}: something isn't a number", pageNumber);
+                            SMFDUtil.LogMessage(ourMonitor, "Warning, invalid global button redirect statement on page #{0}: something isn't a number", pageNumber);
                             continue;
                         }
                         redirectGlobals[from] = to;
@@ -300,7 +300,7 @@ namespace SimpleMFD
                     }
                     catch
                     {
-                        JUtil.LogErrorMessage(ourMonitor, "Incorrect signature for the page handler method {0}", handlerModule.name);
+                        SMFDUtil.LogErrorMessage(ourMonitor, "Incorrect signature for the page handler method {0}", handlerModule.name);
                         break;
                     }
                     pageHandlerS = supportMethods;
@@ -314,7 +314,7 @@ namespace SimpleMFD
             {
                 if (node.HasValue("text"))
                 {
-                    text = JUtil.LoadPageDefinition(node.GetValue("text"));
+                    text = SMFDUtil.LoadPageDefinition(node.GetValue("text"));
                     isMutable |= text.IndexOf("$&$", StringComparison.Ordinal) != -1;
                     if (!isMutable)
                     {
@@ -329,7 +329,7 @@ namespace SimpleMFD
 
             if (node.HasValue("textOverlay"))
             {
-                textOverlay = JUtil.LoadPageDefinition(node.GetValue("textOverlay"));
+                textOverlay = SMFDUtil.LoadPageDefinition(node.GetValue("textOverlay"));
             }
 
             foreach (ConfigNode handlerNode in node.GetNodes("BACKGROUNDHANDLER"))
@@ -345,7 +345,7 @@ namespace SimpleMFD
                     }
                     catch
                     {
-                        JUtil.LogErrorMessage(ourMonitor, "Incorrect signature for the background handler method {0}", handlerModule.name);
+                        SMFDUtil.LogErrorMessage(ourMonitor, "Incorrect signature for the background handler method {0}", handlerModule.name);
                         break;
                     }
                     backgroundHandlerS = supportMethods;
@@ -391,7 +391,7 @@ namespace SimpleMFD
                         }
                         else
                         {
-                            JUtil.LogMessage(ourMonitor, "Ignored invalid camera zoom settings on page {0}.", pageNumber);
+                            SMFDUtil.LogMessage(ourMonitor, "Ignored invalid camera zoom settings on page {0}.", pageNumber);
                         }
                     }
                 }
@@ -417,7 +417,7 @@ namespace SimpleMFD
                 }
                 else
                 {
-                    JUtil.LogErrorMessage(ourMonitor, "Interlay texture {0} could not be loaded.", textureURL);
+                    SMFDUtil.LogErrorMessage(ourMonitor, "Interlay texture {0} could not be loaded.", textureURL);
                 }
             }
             if (node.HasValue("textureOverlayURL"))
@@ -429,7 +429,7 @@ namespace SimpleMFD
                 }
                 else
                 {
-                    JUtil.LogErrorMessage(ourMonitor, "Overlay texture {0} could not be loaded.", textureURL);
+                    SMFDUtil.LogErrorMessage(ourMonitor, "Overlay texture {0} could not be loaded.", textureURL);
                 }
             }
 
@@ -487,7 +487,7 @@ namespace SimpleMFD
                     }
                     catch
                     {
-                        JUtil.LogErrorMessage(ourMonitor, "Caught exception when trying to instantiate module '{0}'. Something's fishy here", moduleName);
+                        SMFDUtil.LogErrorMessage(ourMonitor, "Caught exception when trying to instantiate module '{0}'. Something's fishy here", moduleName);
                     }
                     if (thatModule != null)
                     {
@@ -511,7 +511,7 @@ namespace SimpleMFD
 
                 if (thatModule == null)
                 {
-                    JUtil.LogMessage(ourMonitor, "Warning, handler module \"{0}\" could not be loaded. This could be perfectly normal.", moduleName);
+                    SMFDUtil.LogMessage(ourMonitor, "Warning, handler module \"{0}\" could not be loaded. This could be perfectly normal.", moduleName);
                     return null;
                 }
 
@@ -529,7 +529,7 @@ namespace SimpleMFD
                             }
                             catch
                             {
-                                JUtil.LogErrorMessage(ourMonitor, sigError, "page activation", moduleName);
+                                SMFDUtil.LogErrorMessage(ourMonitor, sigError, "page activation", moduleName);
                             }
                             break;
                         }
@@ -548,7 +548,7 @@ namespace SimpleMFD
                             }
                             catch
                             {
-                                JUtil.LogErrorMessage(ourMonitor, sigError, "button click", moduleName);
+                                SMFDUtil.LogErrorMessage(ourMonitor, sigError, "button click", moduleName);
                             }
                             break;
                         }
@@ -567,7 +567,7 @@ namespace SimpleMFD
                             }
                             catch
                             {
-                                JUtil.LogErrorMessage(ourMonitor, sigError, "button release", moduleName);
+                                SMFDUtil.LogErrorMessage(ourMonitor, sigError, "button release", moduleName);
                             }
                             break;
                         }
@@ -586,13 +586,13 @@ namespace SimpleMFD
                             }
                             catch
                             {
-                                JUtil.LogErrorMessage(ourMonitor, sigError, "handler references", moduleName);
+                                SMFDUtil.LogErrorMessage(ourMonitor, sigError, "handler references", moduleName);
                             }
                             break;
                         }
                     }
                 }
-
+                
                 moduleInstance = thatModule;
                 foreach (MethodInfo m in thatModule.GetType().GetMethods())
                 {

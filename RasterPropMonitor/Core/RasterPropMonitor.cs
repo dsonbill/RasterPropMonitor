@@ -80,9 +80,9 @@ namespace SimpleMFD
         [KSPField]
         public bool oneshot = false;
         // This needs to be public so that pages can point it.
-        public FlyingCamera cameraStructure;
+        public SMFDFlyingCamera cameraStructure;
         // Internal stuff.
-        private TextRenderer textRenderer;
+        private SMFDTextRenderer textRenderer;
         private RenderTexture screenTexture;
         private Texture2D frozenScreen;
         // Local variables
@@ -91,8 +91,8 @@ namespace SimpleMFD
         private int vesselNumParts;
         private bool firstRenderComplete;
         private bool textRefreshRequired;
-        private readonly List<MonitorPage> pages = new List<MonitorPage>();
-        private MonitorPage activePage;
+        private readonly List<SMFDMonitorPage> pages = new List<SMFDMonitorPage>();
+        private SMFDMonitorPage activePage;
         private string persistentVarName;
         private FXGroup audioOutput;
         public Texture2D noSignalTexture;
@@ -111,17 +111,17 @@ namespace SimpleMFD
                     if (GameDatabase.Instance.ExistsTexture(location.EnforceSlashes()))
                     {
                         font = GameDatabase.Instance.GetTexture(location.EnforceSlashes(), false);
-                        JUtil.LogMessage(caller, "Loading font texture from URL \"{0}\"", location);
+                        SMFDUtil.LogMessage(caller, "Loading font texture from URL \"{0}\"", location);
                     }
                     else
                     {
                         font = (Texture2D)thisProp.FindModelTransform(location).GetComponent<Renderer>().material.mainTexture;
-                        JUtil.LogMessage(caller, "Loading font texture from a transform named \"{0}\"", location);
+                        SMFDUtil.LogMessage(caller, "Loading font texture from a transform named \"{0}\"", location);
                     }
                 }
                 catch(Exception)
                 {
-                    JUtil.LogErrorMessage(caller, "Failed loading font texture \"{0}\" - missing texture?", location);
+                    SMFDUtil.LogErrorMessage(caller, "Failed loading font texture \"{0}\" - missing texture?", location);
                 }
             }
             return font;
@@ -131,7 +131,7 @@ namespace SimpleMFD
         {
 
             // If we're not in the correct location, there's no point doing anything.
-            if (!InstallationPathWarning.Warn())
+            if (!SMFDInstallationPathWarning.Warn())
             {
                 return;
             }
@@ -165,7 +165,7 @@ namespace SimpleMFD
 
                 if (!string.IsNullOrEmpty(fontDefinition))
                 {
-                    JUtil.LogMessage(this, "Loading font definition from {0}", fontDefinition);
+                    SMFDUtil.LogMessage(this, "Loading font definition from {0}", fontDefinition);
                     fontDefinitionString = File.ReadAllLines(KSPUtil.ApplicationRootPath + "GameData/" + fontDefinition.EnforceSlashes(), Encoding.UTF8)[0];
                 }
 
@@ -184,7 +184,7 @@ namespace SimpleMFD
                 }
 
                 // Create camera instance...
-                cameraStructure = new FlyingCamera(part, cameraAspect);
+                cameraStructure = new SMFDFlyingCamera(part, cameraAspect);
 
                 // The neat trick. IConfigNode doesn't work. No amount of kicking got it to work.
                 // Well, we don't need it. GameDatabase, gimme config nodes for all props!
@@ -207,7 +207,7 @@ namespace SimpleMFD
                             // Mwahahaha.
                             try
                             {
-                                var newPage = new MonitorPage(i, pageNodes[i], this);
+                                var newPage = new SMFDMonitorPage(i, pageNodes[i], this);
                                 activePage = activePage ?? newPage;
                                 if (newPage.isDefault)
                                     activePage = newPage;
@@ -215,7 +215,7 @@ namespace SimpleMFD
                             }
                             catch (ArgumentException e)
                             {
-                                JUtil.LogMessage(this, "Warning - {0}", e);
+                                SMFDUtil.LogMessage(this, "Warning - {0}", e);
                             }
 
                         }
@@ -230,9 +230,9 @@ namespace SimpleMFD
                     }
                 }
 
-                JUtil.LogMessage(this, "Done setting up pages, {0} pages ready.", pages.Count);
+                SMFDUtil.LogMessage(this, "Done setting up pages, {0} pages ready.", pages.Count);
 
-                textRenderer = new TextRenderer(fontTexture, new Vector2((float)fontLetterWidth, (float)fontLetterHeight), fontDefinitionString, 17, screenPixelWidth, screenPixelHeight);
+                textRenderer = new SMFDTextRenderer(fontTexture, new Vector2((float)fontLetterWidth, (float)fontLetterHeight), fontDefinitionString, 17, screenPixelWidth, screenPixelHeight);
 
                 // Load our state from storage...
                 persistentVarName = "activePage" + internalProp.propID;
@@ -253,11 +253,11 @@ namespace SimpleMFD
                         string buttonName = tokens[i].Trim();
                         // Notice that holes in the global button list ARE legal.
                         if (!string.IsNullOrEmpty(buttonName))
-                            SmarterButton.CreateButton(internalProp, buttonName, i, GlobalButtonClick, GlobalButtonRelease);
+                            SMFDSmarterButton.CreateButton(internalProp, buttonName, i, GlobalButtonClick, GlobalButtonRelease);
                     }
                 }
 
-                audioOutput = JUtil.SetupIVASound(internalProp, buttonClickSound, buttonClickVolume, false);
+                audioOutput = SMFDUtil.SetupIVASound(internalProp, buttonClickSound, buttonClickVolume, false);
 
                 //if (needsElectricCharge)
                 //{
@@ -270,7 +270,7 @@ namespace SimpleMFD
             }
             catch
             {
-                JUtil.AnnoyUser(this);
+                SMFDUtil.AnnoyUser(this);
                 // We can also disable ourselves, that should help.
                 enabled = false;
                 // And now that we notified the user that config is borked, we rethrow the exception so that
@@ -333,11 +333,11 @@ namespace SimpleMFD
             activePage.GlobalButtonRelease(buttonID);
         }
 
-        private MonitorPage FindPageByName(string pageName)
+        private SMFDMonitorPage FindPageByName(string pageName)
         {
             if (!string.IsNullOrEmpty(pageName))
             {
-                foreach (MonitorPage page in pages)
+                foreach (SMFDMonitorPage page in pages)
                 {
                     if (page.name == pageName)
                         return page;
@@ -346,7 +346,7 @@ namespace SimpleMFD
             return null;
         }
 
-        public void PageButtonClick(MonitorPage triggeredPage)
+        public void PageButtonClick(SMFDMonitorPage triggeredPage)
         {
             if (resourceDepleted)
             {
@@ -452,7 +452,7 @@ namespace SimpleMFD
                 return;
             }
 
-            if (!JUtil.RasterPropMonitorShouldUpdate(vessel) && !JUtil.UserIsInPod(part))
+            if (!SMFDUtil.RasterPropMonitorShouldUpdate(vessel) && !SMFDUtil.UserIsInPod(part))
             {
                 return;
             }
@@ -461,7 +461,7 @@ namespace SimpleMFD
             if (doScreenshots && GameSettings.TAKE_SCREENSHOT.GetKeyDown() && part.ActiveKerbalIsLocal())
             {
                 // Let's try to save a screenshot.
-                JUtil.LogMessage(this, "SCREENSHOT!");
+                SMFDUtil.LogMessage(this, "SCREENSHOT!");
 
                 string screenshotName = string.Format("{0}{1}{2:yyyy-MM-dd_HH-mm-ss}_{4}_{3}.png",
                                             KSPUtil.ApplicationRootPath, "Screenshots/monitor", DateTime.Now, internalProp.propID, part.GetInstanceID());
