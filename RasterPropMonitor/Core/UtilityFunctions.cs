@@ -1466,7 +1466,7 @@ namespace SimpleMFD
         private const string gameData = "GameData";
         private static readonly string[] pathSep = { gameData };
 
-        public static bool Warn(string path = "SimpleMFD")
+        public static bool Warn(string path = "SimpleMFD/Plugins")
         {
             string assemblyPath = Assembly.GetCallingAssembly().Location;
             string fileName = Path.GetFileName(assemblyPath);
