@@ -22,7 +22,7 @@ using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace JSI
+namespace SimpleMFD
 {
     /// <summary>
     /// This class exists to provide a base class that RasterPropMonitorComputer

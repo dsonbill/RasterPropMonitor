@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace JSI
+namespace SimpleMFD
 {
     /// <summary>
     /// JSITextMesh is designed as a drop-in replacement for Unity's TextMesh
@@ -32,7 +32,7 @@ namespace JSI
     /// 2) the generated mesh includes normals and tangents, making this class
     /// suitable for in-scene lighting.
     /// </summary>
-    public class JSITextMesh : MonoBehaviour
+    public class SMFDTextMesh : MonoBehaviour
     {
         private TextAlignment alignment_;
         public TextAlignment alignment

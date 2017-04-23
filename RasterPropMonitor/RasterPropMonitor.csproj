@@ -7,8 +7,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{F19C7AB4-50C2-4378-9673-CC039CA12E10}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>JSI</RootNamespace>
-    <AssemblyName>RasterPropMonitor</AssemblyName>
+    <RootNamespace>SimpleMFD</RootNamespace>
+    <AssemblyName>SimpleMFD</AssemblyName>
     <ReleaseVersion>0.28.0</ReleaseVersion>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <CodePage>65001</CodePage>
@@ -41,106 +41,45 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="KSPAssets">
-      <HintPath>..\..\..\..\..\Games\Steam\steamapps\common\Kerbal Space Program\KSP_Data\Managed\KSPAssets.dll</HintPath>
+      <HintPath>..\KSPAssets.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\Games\Steam\steamapps\common\Kerbal Space Program\KSP_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\..\Games\Steam\steamapps\common\Kerbal Space Program\KSP_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Core" />
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\..\..\..\Games\Steam\steamapps\common\Kerbal Space Program\KSP_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\..\Games\Steam\steamapps\common\Kerbal Space Program\KSP_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Auxiliary modules\JSICallbackAnimator.cs" />
-    <Compile Include="Auxiliary modules\JSIEngineMonitor.cs" />
     <Compile Include="Auxiliary modules\JSIFlashModule.cs" />
-    <Compile Include="Auxiliary modules\JSILabel.cs" />
-    <Compile Include="Auxiliary modules\JSINavBall.cs" />
-    <Compile Include="Auxiliary modules\JSINumericInput.cs" />
-    <Compile Include="Auxiliary modules\JSIRadar.cs" />
-    <Compile Include="Auxiliary modules\JSIThrustReverser.cs" />
-    <Compile Include="Core\AeroExtensions.cs" />
-    <Compile Include="Core\CustomVariable.cs" />
     <Compile Include="Core\JSITextMesh.cs" />
-    <Compile Include="Core\MathVariable.cs" />
-    <Compile Include="Core\RPMCEvaluators.cs" />
-    <Compile Include="Core\RPMCPersistence.cs" />
     <Compile Include="Core\RPMGlobals.cs" />
-    <Compile Include="Core\RPMVCEvaluators.cs" />
-    <Compile Include="Core\RPMCTriggeredEvent.cs" />
-    <Compile Include="Core\RPMVCPerModule.cs" />
-    <Compile Include="Core\RPMVesselComputer.cs" />
-    <Compile Include="Core\MappedVariable.cs" />
-    <Compile Include="Core\Protractor.cs" />
-    <Compile Include="Core\SelectVariable.cs" />
     <Compile Include="Core\TextRenderer.cs" />
+    <Compile Include="Core\UtilityFunctions.cs" />
     <Compile Include="Handlers\IJSIModule.cs" />
-    <Compile Include="Handlers\JSIChatterer.cs" />
-    <Compile Include="Handlers\JSIEngine.cs" />
-    <Compile Include="Handlers\JSIFAR.cs" />
-    <Compile Include="Handlers\JSIGraphingBackground.cs" />
-    <Compile Include="Handlers\JSIKAC.cs" />
-    <Compile Include="Handlers\JSIMechJeb.cs" />
-    <Compile Include="Handlers\JSIParachute.cs" />
-    <Compile Include="Handlers\JSIPilotAssistant.cs" />
-    <Compile Include="Handlers\JSISASMenu.cs" />
-    <Compile Include="Handlers\KACWrapper.cs" />
-    <Compile Include="Handlers\MechJebRPM.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ButtonHandler.cs" />
     <Compile Include="Core\FlyingCamera.cs" />
-    <Compile Include="Auxiliary modules\InternalCameraTargetHelper.cs" />
-    <Compile Include="Auxiliary modules\JSIActionGroupSwitch.cs" />
-    <Compile Include="Auxiliary modules\JSIExternalCameraSelector.cs" />
-    <Compile Include="Auxiliary modules\JSIPropTextureShift.cs" />
-    <Compile Include="Auxiliary modules\JSIVariableAnimator.cs" />
     <Compile Include="Core\MonitorPage.cs" />
     <Compile Include="Core\SIFormatter.cs" />
-    <Compile Include="Core\UtilityFunctions.cs" />
-    <Compile Include="Core\RasterPropMonitorComputer.cs" />
     <Compile Include="Core\RasterPropMonitor.cs" />
-    <Compile Include="Auxiliary modules\JSIInternalBackgroundNoise.cs" />
-    <Compile Include="Auxiliary modules\JSIVariableLabel.cs" />
-    <Compile Include="Core\StringProcessor.cs" />
-    <Compile Include="Handlers\JSIFlightLog.cs" />
     <Compile Include="Handlers\JSIPrimaryFlightDisplay.cs" />
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Auxiliary modules\JSISetInternalCameraFOV.cs" />
-    <Compile Include="Handlers\JSITargetMenu.cs" />
-    <Compile Include="Handlers\JSIVariableGraph.cs" />
-    <Compile Include="Handlers\JSIVariablePageTextSwitcher.cs" />
-    <Compile Include="Core\VariableOrNumber.cs" />
-    <Compile Include="Handlers\JSISteerableCamera.cs" />
-    <Compile Include="Core\TextMenu.cs" />
-    <Compile Include="Auxiliary modules\JSIInternalFlagDecal.cs" />
-    <Compile Include="Auxiliary modules\JSIInternalEVAHatch.cs" />
-    <Compile Include="Auxiliary modules\JSIPropIDFinder.cs" />
-    <Compile Include="Handlers\JSIHeadsUpDisplay.cs" />
-    <Compile Include="Core\OrbitExtensions.cs" />
-    <Compile Include="Core\MathExtensions.cs" />
-    <Compile Include="Core\CelestialBodyExtensions.cs" />
-    <Compile Include="Handlers\JSIOrbitDisplay.cs" />
-    <Compile Include="Auxiliary modules\JSISwitchableVariableLabel.cs" />
-    <Compile Include="Core\ResourceDataStorage.cs" />
-    <Compile Include="Core\VariableHandler.cs" />
-    <Compile Include="Handlers\JSIInternalRPMButtons.cs" />
-    <Compile Include="Handlers\JSIOdometer.cs" />
-    <Compile Include="Auxiliary modules\JSISelectivelyVisibleProp.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ProjectExtensions>
@@ -214,7 +153,7 @@
     <None Include="Shaders\RPM-FontShader.shader" />
   </ItemGroup>
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)GameData\JSI\RasterPropMonitor\Plugins\
-copy $(TargetPath) "D:\Games\Steam\steamapps\common\Kerbal Space Program\GameData\JSI\RasterPropMonitor\Plugins\"</PostBuildEvent>
+    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)GameData\SimpleMFD\Plugins\
+copy $(TargetPath) "E:\Games\SteamLibrary\steamapps\common\Kerbal Space Program\GameData\SimpleMFD\Plugins\"</PostBuildEvent>
   </PropertyGroup>
 </Project>

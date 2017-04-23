@@ -22,7 +22,7 @@ using System;
 using UnityEngine;
 
 // FIXME: This module turned into total spaghetti by now and needs some serious rethinking.
-namespace JSI
+namespace SimpleMFD
 {
     public class FlyingCamera
     {
@@ -226,7 +226,7 @@ namespace JSI
             if (sourceCam != null)
             {
                 var cameraBody = new GameObject();
-                cameraBody.name = typeof(RasterPropMonitor).Name + index + cameraBody.GetInstanceID();
+                cameraBody.name = typeof(SimpleMFD).Name + index + cameraBody.GetInstanceID();
                 cameraObject[index] = cameraBody.AddComponent<Camera>();
 
                 // Just in case to support JSITransparentPod.

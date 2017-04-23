@@ -1,3 +1,10 @@
+## KSP
+Assembly-CSharp.dll
+Assembly-CSharp-firstpass.dll
+KSPAssets.dll
+UnityEngine.dll
+UnityEngine.UI.dll
+
 ## Why isn't this ignored anyway?..
 *.userprefs
 

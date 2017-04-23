@@ -21,7 +21,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JSI
+namespace SimpleMFD
 {
     /// <summary>
     /// The RPMGlobals class contains various statically-defined global values.
@@ -30,7 +30,7 @@ namespace JSI
     /// </summary>
     internal static class RPMGlobals
     {
-        internal static readonly string configFileName = "GameData/JSI/RasterPropMonitor/Plugins/PluginData/rpm-config.cfg";
+        internal static readonly string configFileName = "GameData/SimpleMFD/Plugins/PluginData/rpm-config.cfg";
         internal const float KelvinToCelsius = -273.15f;
         internal const float MetersToFeet = 3.2808399f;
         internal const float MetersPerSecondToKnots = 1.94384449f;
@@ -66,6 +66,5 @@ namespace JSI
         internal static Dictionary<string, ConfigNode> customVariables = new Dictionary<string, ConfigNode>();
         internal static List<string> knownLoadedAssemblies = new List<string>();
         internal static SortedDictionary<string, string> systemNamedResources = new SortedDictionary<string, string>();
-        internal static List<RasterPropMonitorComputer.TriggeredEventTemplate> triggeredEvents = new List<RasterPropMonitorComputer.TriggeredEventTemplate>();
     }
 }

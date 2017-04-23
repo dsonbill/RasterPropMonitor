@@ -25,7 +25,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace JSI
+namespace SimpleMFD
 {
     public class MonitorPage
     {
@@ -34,7 +34,6 @@ namespace JSI
         public readonly string name = string.Empty;
         public readonly bool unlocker;
         private readonly string text;
-        private StringProcessorFormatter[] spf;
         private string processedText = string.Empty;
 
         public string Text
@@ -80,7 +79,7 @@ namespace JSI
         private readonly Func<int, int, string> pageHandlerMethod;
         private readonly Func<RenderTexture, float, bool> backgroundHandlerMethod;
         private readonly HandlerSupportMethods pageHandlerS, backgroundHandlerS;
-        private readonly RasterPropMonitor ourMonitor;
+        private readonly SimpleMFD ourMonitor;
         private readonly int screenWidth, screenHeight;
         private readonly float cameraAspect;
         private readonly int zoomUpButton, zoomDownButton;
@@ -91,7 +90,6 @@ namespace JSI
         private readonly bool showNoSignal;
         private readonly bool simpleLockingPage;
         private readonly List<string> disableSwitchingTo = new List<string>();
-        private readonly DefaultableDictionary<string, string> redirectPages = new DefaultableDictionary<string, string>(string.Empty);
         private readonly DefaultableDictionary<int, int?> redirectGlobals = new DefaultableDictionary<int, int?>(null);
         private readonly MonoBehaviour backgroundHandlerModule, pageHandlerModule;
         private readonly float cameraFlickerChance;
@@ -108,7 +106,7 @@ namespace JSI
             public Action<MonoBehaviour, MonoBehaviour> getHandlerReferences;
         }
 
-        public void UpdateText(RasterPropMonitorComputer rpmComp)
+        public void UpdateText()
         {
             // If there's a handler references method, it gets called before each text call.
             if (pageHandlerS.getHandlerReferences != null)
@@ -119,41 +117,30 @@ namespace JSI
             if (pageHandlerMethod != null)
             {
                 processedText = pageHandlerMethod(screenWidth, screenHeight);
-
-                if (processedText.IndexOf("$&$", StringComparison.Ordinal) != -1)
-                {
-                    // There are processed variables in here?
-                    StringBuilder bf = new StringBuilder();
-                    string[] linesArray = processedText.Split(JUtil.LineSeparator, StringSplitOptions.None);
-                    for (int i = 0; i < linesArray.Length; i++)
-                    {
-                        bf.AppendLine(StringProcessor.ProcessString(linesArray[i], rpmComp));
-                    }
-                    processedText = bf.ToString();
-                }
             }
             else
             {
-                if (isMutable)
-                {
-                    if(spf == null)
-                    {
-                        string[] linesArray = text.Split(JUtil.LineSeparator, StringSplitOptions.None);
-                        spf = new StringProcessorFormatter[linesArray.Length];
-                        for(int i=0; i<linesArray.Length; ++i)
-                        {
-                            spf[i] = new StringProcessorFormatter(linesArray[i], rpmComp);
-                        }
-                    }
-
-                    StringBuilder bf = new StringBuilder();
-                    for (int i = 0; i < spf.Length; i++)
-                    {
-                        bf.AppendLine(StringProcessor.ProcessString(spf[i], rpmComp));
-                    }
-
-                    processedText = bf.ToString();
-                }
+                //if (isMutable)
+                //{
+                //    if(spf == null)
+                //    {
+                //        string[] linesArray = text.Split(JUtil.LineSeparator, StringSplitOptions.None);
+                //        spf = new StringProcessorFormatter[linesArray.Length];
+                //        for(int i=0; i<linesArray.Length; ++i)
+                //        {
+                //            spf[i] = new StringProcessorFormatter(linesArray[i], rpmComp);
+                //        }
+                //    }
+                //
+                //    StringBuilder bf = new StringBuilder();
+                //    for (int i = 0; i < spf.Length; i++)
+                //    {
+                //        bf.AppendLine(StringProcessor.ProcessString(spf[i], rpmComp));
+                //    }
+                //
+                //    processedText = bf.ToString();
+                //}
+                processedText = "TODO LOL";
             }
 
         }
@@ -177,7 +164,7 @@ namespace JSI
                 }
             }
 
-            return redirectPages[destination];
+            return "What are redirect Pages";
         }
 
         private static bool IsValidPageName(string thatName)
@@ -193,7 +180,7 @@ namespace JSI
             return true;
         }
 
-        public MonitorPage(int idNum, ConfigNode node, RasterPropMonitor thatMonitor)
+        public MonitorPage(int idNum, ConfigNode node, SimpleMFD thatMonitor)
         {
             ourMonitor = thatMonitor;
             screenWidth = ourMonitor.screenWidth;
@@ -280,18 +267,6 @@ namespace JSI
                 ConfigNode[] redirectnodes = node.GetNodes("CONTEXTREDIRECT");
                 for (int i = 0; i < redirectnodes.Length; ++i)
                 {
-                    string[] redirects = redirectnodes[i].GetValues("redirect");
-                    for (int j = 0; j < redirects.Length; ++j)
-                    {
-                        string[] tokens = redirects[j].Split(',');
-                        if (tokens.Length > 2 || !IsValidPageName(tokens[0].Trim()) || !IsValidPageName(tokens[1].Trim()))
-                        {
-                            JUtil.LogMessage(ourMonitor, "Warning, invalid page redirect statement on page #{0}.", pageNumber);
-                            continue;
-                        }
-                        redirectPages[tokens[0].Trim()] = tokens[1].Trim();
-                    }
-
                     string[] renumbers = redirectnodes[i].GetValues("renumber");
                     for (int j = 0; j < renumbers.Length; ++j)
                     {
@@ -310,8 +285,6 @@ namespace JSI
                         redirectGlobals[from] = to;
                     }
                 }
-
-                JUtil.LogMessage(this, "Page '{2}' (#{0}) registers {1} page redirects and {3} global button redirects.", idNum, redirectPages.Count, name, redirectGlobals.Count);
             }
 
             foreach (ConfigNode handlerNode in node.GetNodes("PAGEHANDLER"))
@@ -462,7 +435,7 @@ namespace JSI
 
         }
 
-        private static MethodInfo InstantiateHandler(ConfigNode node, RasterPropMonitor ourMonitor, out MonoBehaviour moduleInstance, out HandlerSupportMethods support)
+        private static MethodInfo InstantiateHandler(ConfigNode node, SimpleMFD ourMonitor, out MonoBehaviour moduleInstance, out HandlerSupportMethods support)
         {
             moduleInstance = null;
             support.activate = null;

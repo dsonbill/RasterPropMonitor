@@ -22,7 +22,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace JSI
+namespace SimpleMFD
 {
     /// <summary>
     /// JSIFlashModule is a very basic class for managing flashing behavior in

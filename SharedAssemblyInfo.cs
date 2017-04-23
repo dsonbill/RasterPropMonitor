@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct ("RasterPropMonitor")]
+[assembly: AssemblyProduct ("SimpleMFD")]
 [assembly: AssemblyCopyright ("Copyright ©2013-2016 by Mihara, MOARdV, and other contributors, released under the terms of GNU GPLv3")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

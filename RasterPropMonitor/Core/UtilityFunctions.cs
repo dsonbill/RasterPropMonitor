@@ -27,7 +27,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace JSI
+namespace SimpleMFD
 {
     public static class MapIcons
     {
@@ -294,63 +294,6 @@ namespace JSI
             else
             {
                 return parsedShaders[shaderName];
-            }
-        }
-
-        /// <summary>
-        /// Parse a config file color string into a Color32.  The colorString
-        /// parameter is a sequnce of R, G, B, A (ranging [0,255]), or it is a
-        /// string prefixed with "COLOR_".  In the latter case, we'll look up
-        /// the color from config files specified in the parent part's
-        /// RasterPropMonitorComputer module, or from a globally-defined color
-        /// table.
-        /// </summary>
-        /// <param name="colorString">The color string to parse.</param>
-        /// <param name="part">The part containing the prop that is asking for
-        /// the color parsing.</param>
-        /// <param name="rpmComp">The rpmComp for the specified part; if null,
-        /// ParseColor32 looks up the RPMC module.</param>
-        /// <returns>Color32; white if colorString is empty, obnoxious magenta
-        /// if an unknown COLOR_ string is provided.</returns>
-        internal static Color32 ParseColor32(string colorString, Part part, ref RasterPropMonitorComputer rpmComp)
-        {
-            if (string.IsNullOrEmpty(colorString))
-            {
-                return Color.white;
-            }
-
-            colorString = colorString.Trim();
-            if (colorString.StartsWith("COLOR_"))
-            {
-                if (part != null)
-                {
-                    if (rpmComp == null)
-                    {
-                        rpmComp = RasterPropMonitorComputer.Instantiate(part, false);
-                    }
-
-                    if (rpmComp != null)
-                    {
-                        if (rpmComp.overrideColors.ContainsKey(colorString))
-                        {
-                            return rpmComp.overrideColors[colorString];
-                        }
-                    }
-                }
-
-                if (globalColors.ContainsKey(colorString))
-                {
-                    return globalColors[colorString];
-                }
-                else
-                {
-                    JUtil.LogErrorMessage(null, "Unrecognized color '{0}' in ParseColor32", colorString);
-                    return new Color32(255, 0, 255, 255);
-                }
-            }
-            else
-            {
-                return ConfigNode.ParseColor32(colorString);
             }
         }
 
@@ -1369,34 +1312,6 @@ namespace JSI
         }
 
         /// <summary>
-        /// Method to instantiate one of the IComplexVariable objects on an rpmComp.
-        /// </summary>
-        /// <param name="node">The config node fetched from RPMGlobals</param>
-        /// <param name="rpmComp">The RasterPropMonitorComputer that is hosting the variable</param>
-        /// <returns>The complex variable, or null</returns>
-        internal static IComplexVariable InstantiateComplexVariable(ConfigNode node, RasterPropMonitorComputer rpmComp)
-        {
-            if (node == null)
-            {
-                throw new ArgumentNullException("node was null. how did that happen?");
-            }
-
-            switch (node.name)
-            {
-                case "RPM_CUSTOM_VARIABLE":
-                    return new CustomVariable(node, rpmComp);
-                case "RPM_MAPPED_VARIABLE":
-                    return new MappedVariable(node, rpmComp);
-                case "RPM_MATH_VARIABLE":
-                    return new MathVariable(node, rpmComp);
-                case "RPM_SELECT_VARIABLE":
-                    return new SelectVariable(node, rpmComp);
-            }
-
-            throw new ArgumentException("Unrecognized complex variable " + node.name);
-        }
-
-        /// <summary>
         /// Convert a numeric object to a float where.
         /// </summary>
         /// <param name="thatValue"></param>
@@ -1551,7 +1466,7 @@ namespace JSI
         private const string gameData = "GameData";
         private static readonly string[] pathSep = { gameData };
 
-        public static bool Warn(string path = "JSI/RasterPropMonitor/Plugins")
+        public static bool Warn(string path = "SimpleMFD")
         {
             string assemblyPath = Assembly.GetCallingAssembly().Location;
             string fileName = Path.GetFileName(assemblyPath);
@@ -1672,11 +1587,12 @@ namespace JSI
     /// and stored (primarily values found in the RPMVesselComputer).
     /// </summary>
     [KSPAddon(KSPAddon.Startup.MainMenu, true)]
-    public class RPMShaderLoader : MonoBehaviour
+    public class SMFDShaderLoader : MonoBehaviour
     {
         //private bool reloadInProgress = false;
+        KSPAssets.AssetDefinition[] rpmShaders;
 
-        RPMShaderLoader()
+        SMFDShaderLoader()
         {
             // I don't want this object destroyed on scene change, since the database
             // loader coroutine can take a while to run to completion.  Eventually,
@@ -1696,7 +1612,7 @@ namespace JSI
                 return;
             }
 
-            KSPAssets.AssetDefinition[] rpmShaders = KSPAssets.Loaders.AssetLoader.GetAssetDefinitionsWithType("JSI/RasterPropMonitor/rasterpropmonitor", typeof(Shader));
+            rpmShaders = KSPAssets.Loaders.AssetLoader.GetAssetDefinitionsWithType("SimpleMFD/rasterpropmonitor", typeof(Shader));
             if (rpmShaders == null || rpmShaders.Length == 0)
             {
                 JUtil.LogErrorMessage(this, "Unable to load shaders - No shaders found in RPM asset bundle.");
@@ -1706,7 +1622,7 @@ namespace JSI
             if (!GameDatabase.Instance.IsReady())
             {
                 JUtil.LogErrorMessage(this, "GameDatabase.IsReady is false");
-                throw new Exception("RPMShaderLoader: GameDatabase is not ready.  Unable to continue.");
+                throw new Exception("SMFDShaderLoader: GameDatabase is not ready.  Unable to continue.");
             }
 
             ConfigNode rpmSettings = ConfigNode.Load(KSPUtil.ApplicationRootPath + RPMGlobals.configFileName);
@@ -1784,7 +1700,7 @@ namespace JSI
             KSPAssets.Loaders.AssetLoader.LoadAssets(AssetsLoaded, rpmShaders[0]);
 
             //reloadInProgress = true;
-            StartCoroutine("LoadRasterPropMonitorValues");
+            //StartCoroutine("LoadRasterPropMonitorValues");
 
             // Register a callback with ModuleManager so we can get notified
             // of database reloads.
@@ -1795,222 +1711,37 @@ namespace JSI
         }
 
         /// <summary>
-        /// Coroutine for loading the various custom variables used for variables.
-        /// Yield-returns ever 32 or so variables so it's not as costly in a
-        /// given frame.  Also loads all the other various values used by RPM.
-        /// </summary>
-        /// <returns></returns>
-        private IEnumerator LoadRasterPropMonitorValues()
-        {
-            var bodies = FlightGlobals.Bodies;
-            for (int i = 0; i < bodies.Count; ++i)
-            {
-                JUtil.LogMessage(this, "CelestialBody {0} is index {1}", bodies[i].bodyName, bodies[i].flightGlobalsIndex);
-            }
-
-            RPMGlobals.customVariables.Clear();
-
-            ConfigNode[] nodes = GameDatabase.Instance.GetConfigNodes("RPM_CUSTOM_VARIABLE");
-            for (int i = 0; i < nodes.Length; ++i)
-            {
-
-                try
-                {
-                    string varName = nodes[i].GetValue("name");
-
-                    if (!string.IsNullOrEmpty(varName))
-                    {
-                        string completeVarName = "CUSTOM_" + varName;
-                        RPMGlobals.customVariables.Add(completeVarName, nodes[i]);
-                        JUtil.LogMessage(this, "I know about {0}", completeVarName);
-                    }
-                }
-                catch
-                {
-
-                }
-
-                if ((i & 0x1f) == 0x1f)
-                {
-                    yield return null;
-                }
-            }
-
-            // And parse known mapped variables
-            nodes = GameDatabase.Instance.GetConfigNodes("RPM_MAPPED_VARIABLE");
-            for (int i = 0; i < nodes.Length; ++i)
-            {
-                try
-                {
-                    string varName = nodes[i].GetValue("mappedVariable");
-
-                    if (!string.IsNullOrEmpty(varName))
-                    {
-                        string completeVarName = "MAPPED_" + varName;
-                        RPMGlobals.customVariables.Add(completeVarName, nodes[i]);
-                        JUtil.LogMessage(this, "I know about {0}", completeVarName);
-                    }
-                }
-                catch
-                {
-
-                }
-                if ((i & 0x1f) == 0x1f)
-                {
-                    yield return null;
-                }
-            }
-
-            // And parse known math variables
-            nodes = GameDatabase.Instance.GetConfigNodes("RPM_MATH_VARIABLE");
-            for (int i = 0; i < nodes.Length; ++i)
-            {
-                try
-                {
-                    string varName = nodes[i].GetValue("name");
-
-                    if (!string.IsNullOrEmpty(varName))
-                    {
-                        string completeVarName = "MATH_" + varName;
-                        RPMGlobals.customVariables.Add(completeVarName, nodes[i]);
-                        JUtil.LogMessage(this, "I know about {0}", completeVarName);
-                    }
-                }
-                catch
-                {
-
-                }
-                if ((i & 0x1f) == 0x1f)
-                {
-                    yield return null;
-                }
-            }
-
-            // And parse known select variables
-            nodes = GameDatabase.Instance.GetConfigNodes("RPM_SELECT_VARIABLE");
-            for (int i = 0; i < nodes.Length; ++i)
-            {
-                try
-                {
-                    string varName = nodes[i].GetValue("name");
-
-                    if (!string.IsNullOrEmpty(varName))
-                    {
-                        string completeVarName = "SELECT_" + varName;
-                        RPMGlobals.customVariables.Add(completeVarName, nodes[i]);
-                        JUtil.LogMessage(this, "I know about {0}", completeVarName);
-                    }
-                }
-                catch
-                {
-
-                }
-                if ((i & 0x1f) == 0x1f)
-                {
-                    yield return null;
-                }
-            }
-            yield return null;
-
-            JUtil.globalColors.Clear();
-            nodes = GameDatabase.Instance.GetConfigNodes("RPM_GLOBALCOLORSETUP");
-            for (int idx = 0; idx < nodes.Length; ++idx)
-            {
-                ConfigNode[] colorConfig = nodes[idx].GetNodes("COLORDEFINITION");
-                for (int defIdx = 0; defIdx < colorConfig.Length; ++defIdx)
-                {
-                    if (colorConfig[defIdx].HasValue("name") && colorConfig[defIdx].HasValue("color"))
-                    {
-                        string name = "COLOR_" + (colorConfig[defIdx].GetValue("name").Trim());
-                        Color32 color = ConfigNode.ParseColor32(colorConfig[defIdx].GetValue("color").Trim());
-                        if (JUtil.globalColors.ContainsKey(name))
-                        {
-                            JUtil.globalColors[name] = color;
-                        }
-                        else
-                        {
-                            JUtil.globalColors.Add(name, color);
-                        }
-                        JUtil.LogMessage(this, "I know {0} = {1}", name, color);
-                    }
-                }
-            }
-
-            RPMGlobals.triggeredEvents.Clear();
-            nodes = GameDatabase.Instance.GetConfigNodes("RPM_TRIGGERED_EVENT");
-            for (int idx = 0; idx < nodes.Length; ++idx)
-            {
-                string eventName = nodes[idx].GetValue("eventName").Trim();
-
-                try
-                {
-                    RasterPropMonitorComputer.TriggeredEventTemplate triggeredVar = new RasterPropMonitorComputer.TriggeredEventTemplate(nodes[idx]);
-
-                    if (!string.IsNullOrEmpty(eventName) && triggeredVar != null)
-                    {
-                        RPMGlobals.triggeredEvents.Add(triggeredVar);
-                        JUtil.LogMessage(this, "I know about event {0}", eventName);
-                    }
-                }
-                catch (Exception e)
-                {
-                    JUtil.LogErrorMessage(this, "Error adding triggered event {0}: {1}", eventName, e);
-                }
-            }
-
-            RPMGlobals.knownLoadedAssemblies.Clear();
-            for (int i = 0; i < AssemblyLoader.loadedAssemblies.Count; ++i)
-            {
-                string thatName = AssemblyLoader.loadedAssemblies[i].assembly.GetName().Name;
-                RPMGlobals.knownLoadedAssemblies.Add(thatName.ToUpper());
-                JUtil.LogMessage(this, "I know that {0} ISLOADED_{1}", thatName, thatName.ToUpper());
-                if ((i & 0xf) == 0xf)
-                {
-                    yield return null;
-                }
-            }
-
-            RPMGlobals.systemNamedResources.Clear();
-            foreach (PartResourceDefinition thatResource in PartResourceLibrary.Instance.resourceDefinitions)
-            {
-                string varname = thatResource.name.ToUpperInvariant().Replace(' ', '-').Replace('_', '-');
-                RPMGlobals.systemNamedResources.Add(varname, thatResource.name);
-                JUtil.LogMessage(this, "Remembering system resource {1} as SYSR_{0}", varname, thatResource.name);
-            }
-
-            //reloadInProgress = false;
-            yield return null;
-        }
-
-        /// <summary>
         /// Callback that fires once the requested assets have loaded.
         /// </summary>
         /// <param name="loader">Object containing our loaded assets (see comments in this method)</param>
         private void AssetsLoaded(KSPAssets.Loaders.AssetLoader.Loader loader)
         {
+            //This doesn't work if stuff doesn't load right now and has already been loaded. Hah.
+
             // This is an unforunate hack.  AssetLoader.LoadAssets barfs if
             // multiple assets are loaded, leaving us with only one valid asset
             // and some nulls afterwards in loader.objects.  We are forced to
             // traverse the LoadedBundles list to find our loaded bundle so we
             // can find the rest of our shaders.
-            string aShaderName = string.Empty;
-            for (int i = 0; i < loader.objects.Length; ++i)
-            {
-                UnityEngine.Object o = loader.objects[i];
-                if (o != null && o is Shader)
-                {
-                    // We'll remember the name of whichever shader we were
-                    // able to load.
-                    aShaderName = o.name;
-                    break;
-                }
-            }
+            //string aShaderName = string.Empty;
+            //for (int i = 0; i < loader.objects.Length; ++i)
+            //{
+            //    UnityEngine.Object o = loader.objects[i];
+            //    if (o != null && o is Shader)
+            //    {
+            //        // We'll remember the name of whichever shader we were
+            //        // able to load.
+            //        aShaderName = o.name;
+            //        break;
+            //    }
+            //}
+            //
+            //if (string.IsNullOrEmpty(aShaderName))
+            //{
+            //    JUtil.LogErrorMessage(this, "Unable to find a named shader in loader.objects");
+            //    return;
+            //}
 
-            if (string.IsNullOrEmpty(aShaderName))
-            {
-                JUtil.LogErrorMessage(this, "Unable to find a named shader in loader.objects");
-                return;
-            }
 
             var loadedBundles = KSPAssets.Loaders.AssetLoader.LoadedBundles;
             if (loadedBundles == null)
@@ -2040,7 +1771,7 @@ namespace JSI
                         // the bundle we want.
                         for (int shaderIdx = 0; shaderIdx < shaders.Length; ++shaderIdx)
                         {
-                            if (shaders[shaderIdx].name == aShaderName)
+                            if (shaders[shaderIdx].name == rpmShaders[0].name)
                             {
                                 theRightBundle = true;
                                 break;
@@ -2079,7 +1810,7 @@ namespace JSI
         public void PostPatchCallback()
         {
             JUtil.LogMessage(this, "ModuleManager has reloaded - reloading RPM values");
-            StartCoroutine("LoadRasterPropMonitorValues");
+            //StartCoroutine("LoadRasterPropMonitorValues");
         }
 
         private bool RegisterWithModuleManager()

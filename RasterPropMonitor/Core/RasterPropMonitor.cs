@@ -24,9 +24,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace JSI
+namespace SimpleMFD
 {
-    public class RasterPropMonitor : InternalModule
+    public class SimpleMFD : InternalModule
     {
         [KSPField]
         public string screenTransform = "screenTransform";
@@ -68,7 +68,6 @@ namespace JSI
         [KSPField]
         public string resourceName = "SYSR_ELECTRICCHARGE";
         private bool resourceDepleted = false; // Managed by rpmComp callback
-        private Action<bool> del;
         [KSPField]
         public string defaultFontTint = string.Empty;
         public Color defaultFontTintValue = Color.white;
@@ -100,7 +99,7 @@ namespace JSI
         private Material screenMat;
         private bool startupComplete;
         private string fontDefinitionString = @" !""#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~Δ☊¡¢£¤¥¦§¨©ª«¬☋®¯°±²³´µ¶·¸¹º»¼½¾¿";
-        private RasterPropMonitorComputer rpmComp;
+        //private RasterPropMonitorComputer rpmComp;
 
         private static Texture2D LoadFont(object caller, InternalProp thisProp, string location)
         {
@@ -144,11 +143,11 @@ namespace JSI
 
             try
             {
-                rpmComp = RasterPropMonitorComputer.Instantiate(internalProp, true);
-                JUtil.LogMessage(this, "Attaching monitor {2}-{1} to {0}", rpmComp.RPMCid, internalProp.propID, internalProp.internalModel.internalName);
+                //rpmComp = RasterPropMonitorComputer.Instantiate(internalProp, true);
+                //JUtil.LogMessage(this, "Attaching monitor {2}-{1} to {0}", rpmComp.RPMCid, internalProp.propID, internalProp.internalModel.internalName);
 
                 // Install the calculator module.
-                rpmComp.UpdateDataRefreshRate(refreshDataRate);
+                //rpmComp.UpdateDataRefreshRate(refreshDataRate);
 
                 // Loading the font...
                 List<Texture2D> fontTexture = new List<Texture2D>();
@@ -237,11 +236,12 @@ namespace JSI
 
                 // Load our state from storage...
                 persistentVarName = "activePage" + internalProp.propID;
-                int activePageID = rpmComp.GetPersistentVariable(persistentVarName, pages.Count, false).MassageToInt();
-                if (activePageID < pages.Count)
-                {
-                    activePage = pages[activePageID];
-                }
+                //int activePageID = rpmComp.GetPersistentVariable(persistentVarName, pages.Count, false).MassageToInt();
+                //if (activePageID < pages.Count)
+                //{
+                //    activePage = pages[activePageID];
+                //}
+                activePage = pages[0];
                 activePage.Active(true);
 
                 // If we have global buttons, set them up.
@@ -259,11 +259,11 @@ namespace JSI
 
                 audioOutput = JUtil.SetupIVASound(internalProp, buttonClickSound, buttonClickVolume, false);
 
-                if (needsElectricCharge)
-                {
-                    del = (Action<bool>)Delegate.CreateDelegate(typeof(Action<bool>), this, "ResourceDepletedCallback");
-                    rpmComp.RegisterResourceCallback(resourceName, del);
-                }
+                //if (needsElectricCharge)
+                //{
+                //    del = (Action<bool>)Delegate.CreateDelegate(typeof(Action<bool>), this, "ResourceDepletedCallback");
+                //    rpmComp.RegisterResourceCallback(resourceName, del);
+                //}
 
                 // And if the try block never completed, startupComplete will never be true.
                 startupComplete = true;
@@ -296,10 +296,10 @@ namespace JSI
             {
                 Destroy(screenMat);
             }
-            if (del != null)
-            {
-                rpmComp.UnregisterResourceCallback(resourceName, del);
-            }
+            //if (del != null)
+            //{
+            //    rpmComp.UnregisterResourceCallback(resourceName, del);
+            //}
         }
 
         private static void PlayClickSound(FXGroup audioOutput)
@@ -360,7 +360,7 @@ namespace JSI
                 activePage.Active(false);
                 activePage = triggeredPage;
                 activePage.Active(true);
-                rpmComp.SetPersistentVariable(persistentVarName, activePage.pageNumber, false);
+                //rpmComp.SetPersistentVariable(persistentVarName, activePage.pageNumber, false);
                 refreshDrawCountdown = refreshTextCountdown = 0;
                 firstRenderComplete = false;
                 PlayClickSound(audioOutput);
@@ -433,7 +433,7 @@ namespace JSI
 
         private void FillScreenBuffer()
         {
-            activePage.UpdateText(rpmComp);
+            activePage.UpdateText();//rpmComp);
         }
 
         public override void OnUpdate()

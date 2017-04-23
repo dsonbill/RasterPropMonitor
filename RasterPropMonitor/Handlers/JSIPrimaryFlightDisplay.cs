@@ -22,16 +22,16 @@ using UnityEngine;
 using System;
 using KSP.UI.Screens.Flight;
 
-namespace JSI
+namespace SimpleMFD
 {
     public class JSIPrimaryFlightDisplay : InternalModule
     {
         [KSPField]
         public int drawingLayer = 17;
         [KSPField]
-        public string horizonTexture = "JSI/RasterPropMonitor/Library/Components/NavBall/NavBall000";
+        public string horizonTexture = "SimpleMFD/Library/Components/NavBall/NavBall000";
         [KSPField]
-        public string navBallModel = "JSI/RasterPropMonitor/Library/Components/NavBall/NavBall";
+        public string navBallModel = "SimpleMFD/Library/Components/NavBall/NavBall";
         [KSPField]
         public string staticOverlay = string.Empty;
         [KSPField]
@@ -76,6 +76,8 @@ namespace JSI
         private Color dockingColorValue = Color.red;
         [KSPField]
         public int speedModeButton = 4;
+
+        private NavBall navBallNavBall;
 
         private readonly Quaternion rotateNavBall = Quaternion.Euler(0.0f, 180.0f, 0.0f);
 
@@ -221,20 +223,21 @@ namespace JSI
             // gimbal
             navBall.transform.rotation = (rotateNavBall * MirrorX(stockNavBall.relativeGymbal));
 
-            RPMVesselComputer comp = RPMVesselComputer.Instance(vessel);
+            //RPMVesselComputer comp = RPMVesselComputer.Instance(vessel);
             if (heading != null)
             {
                 heading.GetComponent<Renderer>().material.SetTextureOffset("_MainTex",
-                    new Vector2(JUtil.DualLerp(0f, 1f, 0f, 360f, comp.RotationVesselSurface.eulerAngles.y) - headingSpan / 2f, 0));
+                    new Vector2(JUtil.DualLerp(0f, 1f, 0f, 360f, Quaternion.Inverse(navBallNavBall.relativeGymbal).eulerAngles.y) - headingSpan / 2f, 0));
             }
 
             Quaternion gymbal = stockNavBall.attitudeGymbal;
 
             if (FlightGlobals.speedDisplayMode == FlightGlobals.SpeedDisplayModes.Orbit)
             {
-                Vector3 velocityVesselOrbitUnit = comp.Prograde;
-                Vector3 radialPlus = comp.RadialOut;
-                Vector3 normalPlus = comp.NormalPlus;
+
+                Vector3 velocityVesselOrbitUnit = FlightGlobals.ActiveVessel.orbit.GetVel().normalized;
+                Vector3 radialPlus = Vector3.ProjectOnPlane(FlightGlobals.upAxis, velocityVesselOrbitUnit).normalized;
+                Vector3 normalPlus = -Vector3.Cross(radialPlus, velocityVesselOrbitUnit).normalized; ;
                 // stockNavBall.relativeGymbal * (stockNavBall.progradeVector.localRotation * stockNavBall.progradeVector.right == gymbal * velocityVesselOrbitUnit
                 // But...  Same is true for stockNavBall.normalVector and stockNavBall.radialOutVector
 
@@ -305,7 +308,7 @@ namespace JSI
             ITargetable target = FlightGlobals.fetch.VesselTarget;
             if (target != null)
             {
-                Vector3 targetSeparation = comp.TargetSeparation.normalized;
+                Vector3 targetSeparation = FlightGlobals.ActiveVessel.GetTransform().position - target.GetTransform().position.normalized;
                 MoveMarker(markerTarget, targetSeparation, gymbal);
                 MoveMarker(markerTargetMinus, -targetSeparation, gymbal);
                 var targetPort = target as ModuleDockingNode;
@@ -396,6 +399,16 @@ namespace JSI
 
             try
             {
+                try
+                {
+                    navBallNavBall = FindObjectOfType<KSP.UI.Screens.Flight.NavBall>();
+                }
+                catch (Exception e)
+                {
+                    JUtil.LogErrorMessage(this, "Failed to fetch the NavBall: {0}", e);
+                    navBallNavBall = new NavBall();
+                }
+
                 // Parse bloody KSPField colors.
                 if (!string.IsNullOrEmpty(backgroundColor))
                 {
