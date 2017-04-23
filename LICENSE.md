@@ -4,6 +4,8 @@ The complete copy of the license is attached to this document.
 ------
 SUMMARY:
 
+    SimpleMFD  Copyright (C) 2017
+    by Mihara (Eugene Medvedev), MOARdV, and other contributors
     RasterPropMonitor  Copyright (C) 2013-2016
     by Mihara (Eugene Medvedev), MOARdV, and other contributors
     This program comes with ABSOLUTELY NO WARRANTY!
