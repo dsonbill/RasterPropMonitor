@@ -64,17 +64,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Auxiliary modules\JSIFlashModule.cs" />
-    <Compile Include="Core\JSITextMesh.cs" />
     <Compile Include="Core\RPMGlobals.cs" />
     <Compile Include="Core\TextRenderer.cs" />
     <Compile Include="Core\UtilityFunctions.cs" />
-    <Compile Include="Handlers\IJSIModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\ButtonHandler.cs" />
     <Compile Include="Core\FlyingCamera.cs" />
     <Compile Include="Core\MonitorPage.cs" />
-    <Compile Include="Core\SIFormatter.cs" />
     <Compile Include="Core\RasterPropMonitor.cs" />
     <Compile Include="Handlers\JSIPrimaryFlightDisplay.cs" />
     <Compile Include="..\SharedAssemblyInfo.cs">
